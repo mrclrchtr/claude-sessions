@@ -26,6 +26,11 @@ These commands extend Claude Code's built-in functionality with project-specific
 # Or without notes (auto-summarizes recent activity)
 /project:session-update
 
+# Load an existing session (with optional session name)
+/project:session-load 2025-01-16-1347-auth-refactor.md
+# Or load current session
+/project:session-load
+
 # End session with comprehensive summary
 /project:session-end
 
@@ -42,12 +47,13 @@ These commands extend Claude Code's built-in functionality with project-specific
 commands/                       # Custom command directory
 ├── session-start.md           # Command for starting a new session
 ├── session-update.md          # Command for updating current session
+├── session-load.md            # Command for loading an existing session
 ├── session-end.md             # Command for ending and summarizing
 ├── session-current.md         # Command for viewing current status
 ├── session-list.md            # Command for listing all sessions
 └── session-help.md            # Command for showing help
 
-sessions/                      # Session storage directory
+.claude/sessions/              # Session storage directory (created when used)
 ├── .current-session          # Tracks the active session filename
 ├── 2025-01-16-1347.md       # Example session file
 └── [YYYY-MM-DD-HHMM-name].md  # Session naming format
@@ -57,19 +63,15 @@ sessions/                      # Session storage directory
 
 1. Clone this repository or copy the folders to your project:
    ```bash
-   git clone git@github.com:iannuttall/claude-sessions.git
-   # Or copy the commands and sessions folders to your project root
+   git clone git@github.com:mrclrchtr/claude-sessions.git
+   # Or copy the commands folder to your project root
    ```
 
-2. Create the sessions tracking file:
-   ```bash
-   mkdir -p sessions
-   touch sessions/.current-session
-   ```
+2. The session storage directory (`.claude/sessions/`) will be created automatically when you start your first session.
 
 3. Add to `.gitignore` if you don't want to track sessions:
    ```
-   sessions/
+   .claude/sessions/
    ```
 
 ## 📝 How It Works
@@ -127,6 +129,28 @@ Adds timestamped updates to the current session.
 /project:session-update
 ```
 
+### `/project:session-load [session-name]`
+Loads an existing session to continue working on it.
+
+**Parameters:**
+- `[session-name]` (optional) - The filename of the session to load (with `.md` extension). If omitted, loads the current active session.
+
+**What it does:**
+- Finds and validates the specified session file exists
+- Updates the current session pointer to the loaded session
+- Displays a summary of the loaded session content
+- Checks for any running background processes
+- If session doesn't exist, lists available sessions to choose from
+
+**Examples:**
+```
+# Load a specific session by filename
+/project:session-load 2025-01-16-1347-auth-refactor.md
+
+# Load the current active session
+/project:session-load
+```
+
 ### `/project:session-end`
 Ends the current session with a comprehensive summary.
 
@@ -178,9 +202,9 @@ Displays help information about the session system.
 ## 🔧 Customization
 
 ### Adapting for Standard Claude Code Setup
-If you want to use these with Claude Code's standard directory structure:
+These commands are already configured to use Claude Code's standard directory structure (`.claude/sessions/`). To use them as standard Claude Code commands:
 1. Copy the `commands` folder to `.claude/commands/` in your project
-2. Update paths in command files from `sessions/` to `.claude/sessions/`
+2. The commands are already configured to use `.claude/sessions/` for session storage
 
 ### Creating Your Own Commands
 - Modify command files to change behavior
@@ -234,6 +258,8 @@ If you want to use these with Claude Code's standard directory structure:
 /project:session-start fix-email-bounce-handling
 # Investigate issue
 /project:session-update Found AWS SNS webhook misconfiguration
+# Resume later by loading the session
+/project:session-load 2025-01-16-1430-fix-email-bounce-handling.md
 # Implement fix
 /project:session-update Updated webhook handler and added logging
 /project:session-end
@@ -275,7 +301,7 @@ Edit the command files in `commands/` to:
 - Adjust git tracking details
 
 ### Session Storage
-- Default: `sessions/`
+- Default: `.claude/sessions/`
 - Can be changed by updating command files
 - Consider version control needs
 
@@ -283,11 +309,11 @@ Edit the command files in `commands/` to:
 
 **No active session found**
 - Start a new session with `/project:session-start`
-- Check `sessions/.current-session` exists
+- Check `.claude/sessions/.current-session` exists
 
 **Session updates not working**
 - Ensure a session is active
-- Check file permissions in `sessions/`
+- Check file permissions in `.claude/sessions/`
 
 **Missing git information**
 - Verify you're in a git repository
